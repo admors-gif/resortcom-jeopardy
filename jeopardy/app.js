@@ -137,8 +137,8 @@ function saveSession() {
         localStorage.setItem('jeopardy_session', JSON.stringify({
             mesa: state.myMesa,
             left: state.myCountryLeft,
-            right: state.myCountryRight,
-            role: state.role
+            right: state.myCountryRight
+            // NOT saving 'role' so refreshing defaults to Role Selection for new players
         }));
     }
 }
@@ -163,16 +163,10 @@ function tryRestoreSession() {
                 state.myMesa = session.mesa;
                 state.myCountryLeft = session.left;
                 state.myCountryRight = session.right;
-                state.role = session.role || null;
+                state.role = null; // Always clear role on refresh for safety
                 listenToMyMesaCells();
                 showReconnectToast();
-                if (state.role && state.role !== 'host') {
-                    startPlayerMode();
-                } else if (state.role === 'host') {
-                    goToBuzzer();
-                } else {
-                    showRoleSelection();
-                }
+                showRoleSelection();
             } else {
                 // Mesa was released or changed — clear
                 clearSession();
@@ -660,10 +654,10 @@ function listenToQuestionSync() {
         if (data.showResult) {
             resultEl.style.display = 'block';
             if (data.isCorrect) {
-                resultEl.textContent = `✅ ¡CORRECTO! +${data.pts} pts`;
+                resultEl.innerHTML = `✅ ¡CORRECTO! +${data.pts} pts<br><span style="font-size:0.4em; opacity:0.8;">Espera a que el host inicie el siguiente turno...</span>`;
                 resultEl.className = 'pq-result correct';
             } else {
-                resultEl.textContent = `❌ INCORRECTO`;
+                resultEl.innerHTML = `❌ INCORRECTO<br><span style="font-size:0.4em; opacity:0.8;">Espera a que el host inicie el siguiente turno...</span>`;
                 resultEl.className = 'pq-result wrong';
             }
         } else {
@@ -1067,6 +1061,12 @@ function adminResetAll() {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
+    // PREVENT NATIVE BACK BUTTON EXITING APP
+    history.pushState('game', document.title, window.location.href);
+    window.addEventListener('popstate', () => {
+        history.pushState('game', document.title, window.location.href);
+    });
+
     initParticles(); buildWelcomeFlags();
 
     // Init Firebase
