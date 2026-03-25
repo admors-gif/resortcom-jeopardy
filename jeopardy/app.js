@@ -1141,6 +1141,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (questionSyncRef) questionSyncRef.off();
         showRoleSelection();
     });
+    
+    document.getElementById('pbBackToMesas').addEventListener('click', () => {
+        playSound('click'); 
+        state.role = null; 
+        state.myMesa = null; // Exit completely from the table
+        clearSession(); // Remove from localStorage so it doesn't auto-restore into this table
+        if (buzzerSyncRef) buzzerSyncRef.off();
+        if (questionSyncRef) questionSyncRef.off();
+        showScreen('mesa');
+    });
 
     // FIX 2: Board back to buzzer
     document.getElementById('boardBackToBuzzer').addEventListener('click', boardBackToBuzzer);
