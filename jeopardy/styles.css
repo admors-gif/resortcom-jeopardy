@@ -62,12 +62,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);min-h
 .rank-3 .sb-rank{background:var(--bronze);color:#1a1a2e}
 
 /* MESA SELECTION */
-.mesa-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:24px;max-width:900px;width:100%;margin:0 auto}
+.mesa-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:24px;max-width:1200px;width:100%;margin:0 auto}
 .mesa-title{font-family:'Fredoka One',cursive;font-size:2.2rem;background:linear-gradient(90deg,var(--red),var(--yellow),var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:grad 3s linear infinite;background-size:200% auto}
 @keyframes grad{0%{background-position:0% center}100%{background-position:200% center}}
 .mesa-subtitle{color:var(--txt3);font-size:.95rem;letter-spacing:1px}
-.mesa-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;width:100%}
-.mesa-card{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 12px;background:var(--glass);border:2px solid var(--border);backdrop-filter:blur(10px);border-radius:var(--r-lg);cursor:pointer;transition:var(--trb);font-family:'Outfit',sans-serif;color:var(--txt)}
+.mesa-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:15px;width:100%}
+.mesa-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 12px;background:var(--glass);border:2px solid var(--border);backdrop-filter:blur(10px);border-radius:var(--r-lg);cursor:pointer;transition:var(--trb);font-family:'Outfit',sans-serif;color:var(--txt);flex:1 1 180px;max-width:240px;min-width:160px;text-align:center;}
 .mesa-card:hover{transform:translateY(-6px) scale(1.03);box-shadow:0 8px 30px rgba(52,152,219,.3);border-color:var(--blue)}
 .mesa-card.taken{opacity:.35;pointer-events:none;border-color:rgba(230,57,70,.3)}
 .mesa-card.ready{border-color:var(--green);box-shadow:0 0 15px rgba(46,204,113,.2);opacity:1;pointer-events:auto}
@@ -75,9 +75,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);min-h
 .mesa-card.ready .mesa-num{color:var(--green-lt)}
 .mesa-card.mine{border-color:var(--green);box-shadow:0 0 20px rgba(46,204,113,.3);pointer-events:auto;opacity:1}
 .mesa-num{font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--yellow)}
-.mesa-countries{font-size:.75rem;color:var(--txt3);text-align:center;line-height:1.4}
-.mesa-countries-flags{display:flex;gap:6px;align-items:center;margin-top:4px}
-.mesa-countries-flags img{width:24px;height:auto;border-radius:3px}
+.mesa-countries{font-size:.75rem;color:var(--txt3);text-align:center;line-height:1.4;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%}
+.mesa-countries-flags{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px;flex-wrap:wrap;}
+.mesa-countries-flags img{width:28px;height:auto;border-radius:3px;box-shadow:0 0 5px rgba(0,0,0,0.5)}
 
 /* ASSIGN COUNTRIES */
 .assign-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:20px;max-width:800px;width:100%}
