@@ -259,9 +259,10 @@
             <h3 class="admin-title">⚙️ PANEL ADMINISTRADOR</h3>
             <p class="admin-sub">Acciones globales para todas las pantallas</p>
             <div class="admin-actions">
-                <button class="admin-btn admin-btn-yellow" id="adminResetScores">🔄 Resetear TODOS los scores</button>
-                <button class="admin-btn admin-btn-orange" id="adminResetMesas">🗑️ Liberar TODAS las mesas</button>
-                <button class="admin-btn admin-btn-red" id="adminResetAll">💣 RESETEAR TODO (scores + mesas + progreso)</button>
+                <button class="admin-btn admin-btn-yellow" id="adminResetScores">🔄 Resetear TODOS los scores a 0</button>
+                <button class="admin-btn admin-btn-blue" id="adminResetBoard" style="background-color: var(--blue);">🔲 Reactivar TODAS las preguntas (Limpiar Tablero)</button>
+                <button class="admin-btn admin-btn-orange" id="adminResetMesas">🗑️ Liberar TODAS las mesas (Desconectar)</button>
+                <button class="admin-btn admin-btn-red" id="adminResetAll">💣 RESET TOTAL (Mesas + Scores + Tablero)</button>
             </div>
             <button class="admin-close" id="adminClose">✕ Cerrar</button>
         </div>
@@ -270,7 +271,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-    <script src="/questions.js?v=20260324k"></script>
-    <script src="/jeopardy/app.js?v=20260324k"></script>
+    <script src="/questions.js?v=20260324l"></script>
+    <script src="/jeopardy/app.js?v=20260324l"></script>
 </body>
 </html>

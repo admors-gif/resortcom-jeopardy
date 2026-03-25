@@ -1041,6 +1041,17 @@ function adminResetScores() {
     alert('✅ Todos los scores se han reseteado a 0');
 }
 
+function adminResetBoard() {
+    if (!confirm('⚠️ Esto volverá a encender todas las preguntas apagadas del tablero. ¿Continuar?')) return;
+    GAME_REF.child('usedCells').remove().then(() => {
+        alert('✅ Tablero limpio, preguntas reactivadas');
+        // Actualizar visualmente si ya estoy en el grid
+        if (screens.board.classList.contains('active')) {
+            buildGrid();
+        }
+    });
+}
+
 function adminResetMesas() {
     if (!confirm('⚠️ Esto liberará TODAS las mesas en TODAS las pantallas. ¿Continuar?')) return;
     GAME_REF.child('mesas').remove();
@@ -1179,6 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Admin panel buttons
     document.getElementById('adminResetScores').addEventListener('click', adminResetScores);
+    document.getElementById('adminResetBoard').addEventListener('click', adminResetBoard);
     document.getElementById('adminResetMesas').addEventListener('click', adminResetMesas);
     document.getElementById('adminResetAll').addEventListener('click', adminResetAll);
     document.getElementById('adminClose').addEventListener('click', closeAdmin);
