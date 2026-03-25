@@ -1084,6 +1084,11 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('mesa');
     });
 
+    document.getElementById('mesaBackToWelcome').addEventListener('click', () => {
+        playSound('click');
+        showScreen('welcome');
+    });
+
     // Mesa cards
     document.querySelectorAll('.mesa-card').forEach(card => {
         card.addEventListener('click', () => {
