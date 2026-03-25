@@ -30,6 +30,7 @@ const state = {
     myMesa: null,
     myCountryLeft: null,
     myCountryRight: null,
+    role: null, // 'host' | 'playerLeft' | 'playerRight'
     buzzerWinner: null,
     currentCategory: null,
     currentRow: null,
@@ -41,7 +42,8 @@ const state = {
     scores: {},
     usedCells: {},
     mesas: {},
-    questionsAnswered: 0 // FIX 6: track for this mesa
+    questionsAnswered: 0,
+    buzzerPressed: false
 };
 
 // FIX 4: Track listener references for cleanup
@@ -52,12 +54,18 @@ let mesasRef = null;
 const screens = {
     welcome: document.getElementById('welcomeScreen'),
     mesa: document.getElementById('mesaScreen'),
+    role: document.getElementById('roleScreen'),
     assign: document.getElementById('assignScreen'),
     buzzer: document.getElementById('buzzerScreen'),
     board: document.getElementById('boardScreen'),
     question: document.getElementById('questionScreen'),
-    result: document.getElementById('resultScreen')
+    result: document.getElementById('resultScreen'),
+    playerBuzzer: document.getElementById('playerBuzzerScreen'),
+    playerQuestion: document.getElementById('playerQuestionScreen')
 };
+
+let buzzerSyncRef = null;
+let questionSyncRef = null;
 
 // ===== AUDIO =====
 let audioCtx = null;
@@ -129,7 +137,8 @@ function saveSession() {
         localStorage.setItem('jeopardy_session', JSON.stringify({
             mesa: state.myMesa,
             left: state.myCountryLeft,
-            right: state.myCountryRight
+            right: state.myCountryRight,
+            role: state.role
         }));
     }
 }
@@ -154,9 +163,16 @@ function tryRestoreSession() {
                 state.myMesa = session.mesa;
                 state.myCountryLeft = session.left;
                 state.myCountryRight = session.right;
+                state.role = session.role || null;
                 listenToMyMesaCells();
                 showReconnectToast();
-                goToBuzzer();
+                if (state.role && state.role !== 'host') {
+                    startPlayerMode();
+                } else if (state.role === 'host') {
+                    goToBuzzer();
+                } else {
+                    showRoleSelection();
+                }
             } else {
                 // Mesa was released or changed — clear
                 clearSession();
@@ -350,21 +366,21 @@ function onMesaClick(mesaNum) {
     initAudio(); playSound('click');
     const mesaData = state.mesas[`mesa${mesaNum}`];
 
-    if (state.myMesa === mesaNum) {
-        // Already my mesa, go to buzzer directly
-        listenToMyMesaCells();
-        goToBuzzer();
+    // If already my mesa and I have a role, resume
+    if (state.myMesa === mesaNum && state.role) {
+        if (state.role === 'host') { listenToMyMesaCells(); goToBuzzer(); }
+        else { startPlayerMode(); }
         return;
     }
 
-    // If mesa already has countries assigned, join it directly
+    // If mesa has countries, go to role selection
     if (mesaData && mesaData.countries) {
         state.myMesa = mesaNum;
         state.myCountryLeft = mesaData.countries[0];
         state.myCountryRight = mesaData.countries[1];
         listenToMyMesaCells();
         saveSession();
-        goToBuzzer();
+        showRoleSelection();
         return;
     }
 
@@ -375,6 +391,241 @@ function onMesaClick(mesaNum) {
     document.getElementById('assignTitle').textContent = `MESA ${mesaNum} — Elige 2 países`;
     updateAssignUI();
     showScreen('assign');
+}
+
+// ===== ROLE SELECTION =====
+function showRoleSelection() {
+    const left = QUESTIONS_DB[state.myCountryLeft];
+    const right = QUESTIONS_DB[state.myCountryRight];
+    document.getElementById('roleSubtitle').textContent = `Mesa ${state.myMesa} — ${left.name} vs ${right.name}`;
+    document.getElementById('roleFlagLeft').src = left.flagImg;
+    document.getElementById('roleNameLeft').textContent = left.name;
+    document.getElementById('roleFlagRight').src = right.flagImg;
+    document.getElementById('roleNameRight').textContent = right.name;
+    renderScoreboard('scoreboardRole');
+    showScreen('role');
+}
+
+function selectRole(role) {
+    initAudio(); playSound('click');
+    state.role = role;
+    saveSession();
+    if (role === 'host') {
+        goToBuzzer();
+    } else {
+        startPlayerMode();
+    }
+}
+
+// ===== PLAYER MODE =====
+function startPlayerMode() {
+    const left = QUESTIONS_DB[state.myCountryLeft];
+    const right = QUESTIONS_DB[state.myCountryRight];
+    const mySide = state.role === 'playerLeft' ? 'left' : 'right';
+    const myData = mySide === 'left' ? left : right;
+    const rivalData = mySide === 'left' ? right : left;
+    
+    document.getElementById('pbMyFlag').src = myData.flagImg;
+    document.getElementById('pbMyName').textContent = myData.name;
+    document.getElementById('pbRivalFlag').src = rivalData.flagImg;
+    document.getElementById('pbRivalName').textContent = rivalData.name;
+    
+    updatePlayerScores();
+    showScreen('playerBuzzer');
+    listenToBuzzerSync();
+    listenToQuestionSync();
+}
+
+function updatePlayerScores() {
+    const leftScore = state.scores[state.myCountryLeft] || 0;
+    const rightScore = state.scores[state.myCountryRight] || 0;
+    document.getElementById('pbScoreLeft').textContent = leftScore;
+    document.getElementById('pbScoreRight').textContent = rightScore;
+}
+
+// ===== BUZZER SYNC =====
+function activateBuzzerForPlayers() {
+    if (state.role !== 'host' || !state.myMesa) return;
+    GAME_REF.child(`buzzer/mesa${state.myMesa}`).set({
+        active: true,
+        winner: null
+    });
+}
+
+function deactivateBuzzerForPlayers() {
+    if (state.role !== 'host' || !state.myMesa) return;
+    GAME_REF.child(`buzzer/mesa${state.myMesa}`).set({ active: false, winner: null });
+}
+
+function listenToBuzzerSync() {
+    if (buzzerSyncRef) buzzerSyncRef.off();
+    buzzerSyncRef = GAME_REF.child(`buzzer/mesa${state.myMesa}`);
+    buzzerSyncRef.on('value', snap => {
+        const data = snap.val();
+        if (!data) return;
+        const buzzBtn = document.getElementById('pbBuzzBtn');
+        const statusEl = document.getElementById('pbStatus');
+        const hintEl = document.getElementById('pbHint');
+
+        if (state.role === 'host') {
+            // Host: listen for winner from phone buzzer
+            if (data.winner && data.active) {
+                state.buzzerWinner = data.winner === 'left' ? state.myCountryLeft : state.myCountryRight;
+                playSound('buzz');
+                goToBoard();
+            }
+            return;
+        }
+
+        // Player mode
+        if (!data.active) {
+            buzzBtn.disabled = true;
+            buzzBtn.classList.remove('active-buzz', 'won', 'lost');
+            statusEl.textContent = '⏳ Esperando ronda...';
+            statusEl.classList.remove('winner', 'loser');
+            hintEl.textContent = 'El host activará el buzzer';
+            state.buzzerPressed = false;
+            return;
+        }
+
+        if (data.winner) {
+            const mySide = state.role === 'playerLeft' ? 'left' : 'right';
+            buzzBtn.disabled = true;
+            if (data.winner === mySide) {
+                buzzBtn.classList.remove('active-buzz', 'lost');
+                buzzBtn.classList.add('won');
+                statusEl.textContent = '🏆 ¡GANASTE EL TURNO!';
+                statusEl.classList.add('winner');
+                statusEl.classList.remove('loser');
+                hintEl.textContent = 'Espera la pregunta...';
+                playSound('correct');
+            } else {
+                buzzBtn.classList.remove('active-buzz', 'won');
+                buzzBtn.classList.add('lost');
+                statusEl.textContent = '😔 Tarde...';
+                statusEl.classList.add('loser');
+                statusEl.classList.remove('winner');
+                hintEl.textContent = 'Tu rival fue más rápido';
+                playSound('wrong');
+            }
+            return;
+        }
+
+        // Active buzzer, no winner yet — enable button
+        if (!state.buzzerPressed) {
+            buzzBtn.disabled = false;
+            buzzBtn.classList.remove('won', 'lost');
+            buzzBtn.classList.add('active-buzz');
+            statusEl.textContent = '¡PRESIONA!';
+            statusEl.classList.remove('winner', 'loser');
+            hintEl.textContent = '¡Sé el primero!';
+        }
+    });
+}
+
+function playerPressBuzzer() {
+    if (state.buzzerPressed) return;
+    state.buzzerPressed = true;
+    initAudio(); playSound('buzz');
+    const mySide = state.role === 'playerLeft' ? 'left' : 'right';
+    
+    document.getElementById('pbBuzzBtn').disabled = true;
+    document.getElementById('pbStatus').textContent = '⏳ Verificando...';
+    
+    // Atomic transaction: first to set winner wins
+    GAME_REF.child(`buzzer/mesa${state.myMesa}/winner`).transaction(current => {
+        if (current !== null) return; // someone already won, don't overwrite
+        return mySide;
+    });
+}
+
+// ===== QUESTION SYNC (for players) =====
+function syncQuestionToPlayers(catKey, rowIdx, question, pts, answeredBy) {
+    if (state.role !== 'host' || !state.myMesa) return;
+    const answererData = QUESTIONS_DB[answeredBy];
+    GAME_REF.child(`currentQuestion/mesa${state.myMesa}`).set({
+        catKey: catKey,
+        q: question.q,
+        options: question.options,
+        pts: pts,
+        answeredBy: answeredBy,
+        answeredByName: answererData ? answererData.name : '',
+        answeredByFlag: answererData ? answererData.flagImg : '',
+        correctIdx: question.answer,
+        answered: false,
+        selectedIdx: null,
+        showResult: false
+    });
+}
+
+function syncAnswerToPlayers(selectedIdx, isCorrect) {
+    if (state.role !== 'host' || !state.myMesa) return;
+    GAME_REF.child(`currentQuestion/mesa${state.myMesa}`).update({
+        answered: true,
+        selectedIdx: selectedIdx,
+        showResult: true,
+        isCorrect: isCorrect
+    });
+}
+
+function syncQuestionDone() {
+    if (state.role !== 'host' || !state.myMesa) return;
+    GAME_REF.child(`currentQuestion/mesa${state.myMesa}`).set(null);
+}
+
+function listenToQuestionSync() {
+    if (questionSyncRef) questionSyncRef.off();
+    if (state.role === 'host') return; // host doesn't need to listen
+    questionSyncRef = GAME_REF.child(`currentQuestion/mesa${state.myMesa}`);
+    questionSyncRef.on('value', snap => {
+        const data = snap.val();
+        if (!data) {
+            // No active question, show buzzer screen
+            if (screens.playerQuestion.classList.contains('active')) {
+                updatePlayerScores();
+                showScreen('playerBuzzer');
+            }
+            return;
+        }
+
+        // Show question on player screen
+        const catData = QUESTIONS_DB[data.catKey];
+        document.getElementById('pqCatFlag').src = catData ? catData.flagImg : '';
+        document.getElementById('pqCatName').textContent = catData ? catData.name : data.catKey;
+        document.getElementById('pqPts').textContent = `${data.pts} PTS`;
+        document.getElementById('pqWhoFlag').src = data.answeredByFlag || '';
+        document.getElementById('pqWhoName').textContent = data.answeredByName || '';
+        document.getElementById('pqText').textContent = data.q;
+        
+        // Options
+        const letters = ['A', 'B', 'C', 'D'];
+        for (let i = 0; i < 4; i++) {
+            const opt = document.getElementById(`pqOpt${i}`);
+            opt.querySelector('.pq-ol').textContent = letters[i];
+            opt.querySelector('.pq-ot').textContent = data.options[i];
+            opt.classList.remove('ok', 'bad');
+            if (data.showResult && data.answered) {
+                if (i === data.correctIdx) opt.classList.add('ok');
+                else if (i === data.selectedIdx && data.selectedIdx !== data.correctIdx) opt.classList.add('bad');
+            }
+        }
+
+        const resultEl = document.getElementById('pqResult');
+        if (data.showResult) {
+            resultEl.style.display = 'block';
+            if (data.isCorrect) {
+                resultEl.textContent = `✅ ¡CORRECTO! +${data.pts} pts`;
+                resultEl.className = 'pq-result correct';
+            } else {
+                resultEl.textContent = `❌ INCORRECTO`;
+                resultEl.className = 'pq-result wrong';
+            }
+        } else {
+            resultEl.style.display = 'none';
+        }
+
+        showScreen('playerQuestion');
+    });
 }
 
 // ===== ASSIGN COUNTRIES =====
@@ -491,12 +742,13 @@ function confirmMesa() {
         // Success!
         listenToMyMesaCells();
         saveSession(); // FIX 1: persist session
-        goToBuzzer();
+        showRoleSelection();
     });
 }
 
 // ===== BUZZER =====
 function goToBuzzer() {
+    state.role = state.role || 'host';
     const leftC = QUESTIONS_DB[state.myCountryLeft];
     const rightC = QUESTIONS_DB[state.myCountryRight];
     document.getElementById('buzzFlag1').src = leftC.flagImg;
@@ -505,17 +757,25 @@ function goToBuzzer() {
     document.getElementById('buzzName2').textContent = rightC.name;
     renderAllScoreboards();
     showScreen('buzzer');
+    // Activate buzzer for phone players
+    activateBuzzerForPlayers();
+    listenToBuzzerSync();
+}
+
+function goToBoard() {
+    const winner = QUESTIONS_DB[state.buzzerWinner];
+    document.getElementById('bwFlag').src = winner.flagImg;
+    document.getElementById('bwName').textContent = winner.name;
+    buildGrid();
+    renderAllScoreboards(state.buzzerWinner);
+    deactivateBuzzerForPlayers();
+    showScreen('board');
 }
 
 function onBuzz(side) {
     initAudio(); playSound('select');
     state.buzzerWinner = side === 'left' ? state.myCountryLeft : state.myCountryRight;
-    const winner = QUESTIONS_DB[state.buzzerWinner];
-    document.getElementById('bwFlag').src = winner.flagImg;
-    document.getElementById('bwName').textContent = winner.name;
-    buildGrid(); // FIX 8: always rebuild with fresh usedCells from listener
-    renderAllScoreboards(state.buzzerWinner);
-    showScreen('board');
+    goToBoard();
 }
 
 // ===== JEOPARDY GRID =====
@@ -571,6 +831,8 @@ function onCellClick(catKey, rowIdx) {
     // FIX 7: Variable timer based on point row
     state.timerMax = TIMER_BY_POINTS[rowIdx] || 30;
     startTimer();
+    // Sync question to player phones
+    syncQuestionToPlayers(catKey, rowIdx, question, pts, state.buzzerWinner);
     showScreen('question');
 }
 
@@ -601,6 +863,7 @@ function timeUp() {
     document.body.classList.add('flash-bad');
     setTimeout(() => document.body.classList.remove('flash-bad'), 300);
     document.getElementById('qActions').style.display = 'flex';
+    syncAnswerToPlayers(-1, false);
 }
 
 // ===== ANSWER =====
@@ -628,6 +891,8 @@ function onAnswer(idx) {
         setTimeout(() => document.body.classList.remove('flash-bad'), 300);
     }
     document.getElementById('qActions').style.display = 'flex';
+    // Sync answer to player phones
+    syncAnswerToPlayers(idx, isCorrect);
 }
 
 function markCellUsed() {
@@ -640,6 +905,7 @@ function markCellUsed() {
 function goToNextRound() {
     playSound('click'); stopTimer();
     state.buzzerWinner = null;
+    syncQuestionDone();
     goToBuzzer();
 }
 
@@ -791,9 +1057,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // FIX 2: Buzzer back to mesas
     document.getElementById('buzzerBackToMesas').addEventListener('click', buzzerBackToMesas);
 
-    // Buzzer buttons
+    // Buzzer buttons (host manual override)
     document.getElementById('buzzTeam1').addEventListener('click', () => onBuzz('left'));
     document.getElementById('buzzTeam2').addEventListener('click', () => onBuzz('right'));
+
+    // Role selection
+    document.getElementById('rolePlayerLeft').addEventListener('click', () => selectRole('playerLeft'));
+    document.getElementById('rolePlayerRight').addEventListener('click', () => selectRole('playerRight'));
+    document.getElementById('roleHost').addEventListener('click', () => selectRole('host'));
+    document.getElementById('roleBackToMesas').addEventListener('click', () => {
+        playSound('click'); state.role = null; showScreen('mesa');
+    });
+
+    // Player buzzer button
+    document.getElementById('pbBuzzBtn').addEventListener('click', playerPressBuzzer);
 
     // FIX 2: Board back to buzzer
     document.getElementById('boardBackToBuzzer').addEventListener('click', boardBackToBuzzer);

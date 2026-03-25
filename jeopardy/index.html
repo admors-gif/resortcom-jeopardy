@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/jeopardy/styles.css?v=20260324c">
+    <link rel="stylesheet" href="/jeopardy/styles.css?v=20260324d">
 </head>
 <body>
     <canvas id="particlesCanvas"></canvas>
@@ -52,6 +52,89 @@
         </div>
     </div>
 
+    <!-- ========== PANTALLA 2B: SELECCIÓN DE ROL ========== -->
+    <div id="roleScreen" class="screen">
+        <div class="scoreboard" id="scoreboardRole"></div>
+        <div class="role-center">
+            <h2 class="role-title">¿CÓMO PARTICIPAS?</h2>
+            <p class="role-subtitle" id="roleSubtitle">Mesa 1</p>
+            <div class="role-options">
+                <button class="role-btn role-player" id="rolePlayerLeft">
+                    <img src="" alt="" class="role-flag" id="roleFlagLeft">
+                    <span class="role-name" id="roleNameLeft">PAÍS</span>
+                    <span class="role-desc">📱 Jugador — Buzzer desde celular</span>
+                </button>
+                <button class="role-btn role-player" id="rolePlayerRight">
+                    <img src="" alt="" class="role-flag" id="roleFlagRight">
+                    <span class="role-name" id="roleNameRight">PAÍS</span>
+                    <span class="role-desc">📱 Jugador — Buzzer desde celular</span>
+                </button>
+                <button class="role-btn role-host-btn" id="roleHost">
+                    <span class="role-icon">📺</span>
+                    <span class="role-name">PANTALLA PRINCIPAL</span>
+                    <span class="role-desc">Control del juego en TV/laptop</span>
+                </button>
+            </div>
+            <button class="back-link" id="roleBackToMesas">← Volver a mesas</button>
+        </div>
+    </div>
+
+    <!-- ========== PLAYER: BUZZER ========== -->
+    <div id="playerBuzzerScreen" class="screen">
+        <div class="pb-header">
+            <div class="pb-team">
+                <img src="" alt="" class="pb-flag" id="pbMyFlag">
+                <span class="pb-name" id="pbMyName">MI PAÍS</span>
+            </div>
+            <div class="pb-scores">
+                <span class="pb-sc pb-sc-left" id="pbScoreLeft">0</span>
+                <span class="pb-vs">vs</span>
+                <span class="pb-sc pb-sc-right" id="pbScoreRight">0</span>
+            </div>
+            <div class="pb-team">
+                <img src="" alt="" class="pb-flag" id="pbRivalFlag">
+                <span class="pb-name" id="pbRivalName">RIVAL</span>
+            </div>
+        </div>
+        <div class="pb-area">
+            <p class="pb-status" id="pbStatus">⏳ Esperando ronda...</p>
+            <button class="pb-buzz-btn" id="pbBuzzBtn" disabled>
+                <span class="pb-buzz-icon">🔴</span>
+                <span class="pb-buzz-text">BUZZER</span>
+            </button>
+            <p class="pb-hint" id="pbHint">El host activará el buzzer</p>
+        </div>
+    </div>
+
+    <!-- ========== PLAYER: PREGUNTA ========== -->
+    <div id="playerQuestionScreen" class="screen">
+        <div class="pq-container">
+            <div class="pq-header">
+                <div class="pq-cat">
+                    <img src="" alt="" class="pq-flag" id="pqCatFlag">
+                    <span class="pq-cat-name" id="pqCatName">CATEGORÍA</span>
+                </div>
+                <span class="pq-pts" id="pqPts">300 PTS</span>
+            </div>
+            <div class="pq-who">
+                <span class="pq-who-label">RESPONDE:</span>
+                <img src="" alt="" class="pq-who-flag" id="pqWhoFlag">
+                <span class="pq-who-name" id="pqWhoName">PAÍS</span>
+            </div>
+            <div class="pq-timer"><div class="pq-timer-fill" id="pqTimerFill"></div></div>
+            <div class="pq-body">
+                <h3 class="pq-text" id="pqText">¿Pregunta?</h3>
+            </div>
+            <div class="pq-options" id="pqOptions">
+                <div class="pq-opt" id="pqOpt0"><span class="pq-ol">A</span><span class="pq-ot"></span></div>
+                <div class="pq-opt" id="pqOpt1"><span class="pq-ol">B</span><span class="pq-ot"></span></div>
+                <div class="pq-opt" id="pqOpt2"><span class="pq-ol">C</span><span class="pq-ot"></span></div>
+                <div class="pq-opt" id="pqOpt3"><span class="pq-ol">D</span><span class="pq-ot"></span></div>
+            </div>
+            <p class="pq-result" id="pqResult" style="display:none"></p>
+        </div>
+    </div>
+
     <!-- ========== PANTALLA 3: ASIGNAR PAÍSES A MESA ========== -->
     <div id="assignScreen" class="screen">
         <div class="scoreboard" id="scoreboardAssign"></div>
@@ -88,7 +171,7 @@
         <div class="scoreboard" id="scoreboardBuzzer"></div>
         <div class="buzz-box">
             <h2 class="buzz-title">¿QUIÉN PRESIONÓ PRIMERO?</h2>
-            <p class="buzz-hint">¡El ganador elige la pregunta del tablero!</p>
+            <p class="buzz-hint" id="buzzHintText">¡El ganador elige la pregunta del tablero!</p>
             <div class="buzz-buttons">
                 <button class="buzz-btn buzz-b1" id="buzzTeam1">
                     <img src="" alt="" class="buzz-team-flag" id="buzzFlag1">
@@ -172,11 +255,10 @@
         </div>
     </div>
 
-
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-    <script src="/questions.js?v=20260324c"></script>
-    <script src="/jeopardy/app.js?v=20260324c"></script>
+    <script src="/questions.js?v=20260324d"></script>
+    <script src="/jeopardy/app.js?v=20260324d"></script>
 </body>
 </html>
