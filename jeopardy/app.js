@@ -1071,6 +1071,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Player buzzer button
     document.getElementById('pbBuzzBtn').addEventListener('click', playerPressBuzzer);
+    document.getElementById('pbBackToRole').addEventListener('click', () => {
+        playSound('click'); 
+        state.role = null; 
+        saveSession();
+        if (buzzerSyncRef) buzzerSyncRef.off();
+        if (questionSyncRef) questionSyncRef.off();
+        showRoleSelection();
+    });
 
     // FIX 2: Board back to buzzer
     document.getElementById('boardBackToBuzzer').addEventListener('click', boardBackToBuzzer);
