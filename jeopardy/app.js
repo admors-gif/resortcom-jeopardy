@@ -321,7 +321,7 @@ function updateMesaCards() {
         const countriesEl = document.getElementById(`mesaCountries${i}`);
         const mesaData = state.mesas[`mesa${i}`];
 
-        card.classList.remove('taken', 'mine');
+        card.classList.remove('taken', 'mine', 'ready');
 
         if (mesaData && mesaData.countries) {
             const c1 = QUESTIONS_DB[mesaData.countries[0]];
@@ -337,7 +337,8 @@ function updateMesaCards() {
             if (state.myMesa === i) {
                 card.classList.add('mine');
             } else {
-                card.classList.add('taken');
+                // Show as ready to join, not blocked
+                card.classList.add('ready');
             }
         } else {
             countriesEl.textContent = 'Disponible — clic para elegir';
@@ -348,7 +349,6 @@ function updateMesaCards() {
 function onMesaClick(mesaNum) {
     initAudio(); playSound('click');
     const mesaData = state.mesas[`mesa${mesaNum}`];
-    if (mesaData && mesaData.countries && state.myMesa !== mesaNum) return;
 
     if (state.myMesa === mesaNum) {
         // Already my mesa, go to buzzer directly
@@ -357,6 +357,18 @@ function onMesaClick(mesaNum) {
         return;
     }
 
+    // If mesa already has countries assigned, join it directly
+    if (mesaData && mesaData.countries) {
+        state.myMesa = mesaNum;
+        state.myCountryLeft = mesaData.countries[0];
+        state.myCountryRight = mesaData.countries[1];
+        listenToMyMesaCells();
+        saveSession();
+        goToBuzzer();
+        return;
+    }
+
+    // Empty mesa — go to assign screen
     state.myMesa = mesaNum;
     state.myCountryLeft = null;
     state.myCountryRight = null;
