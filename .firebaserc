@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "others-2c89f"
+  },
+  "targets": {
+    "others-2c89f": {
+      "hosting": {
+        "trivia": [
+          "resortcom-trivia"
+        ],
+        "jeopardy": [
+          "resortcom-jeopardy"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "jeopardy": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
