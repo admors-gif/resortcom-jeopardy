@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/jeopardy/styles.css?v=20260324">
+    <link rel="stylesheet" href="/jeopardy/styles.css?v=20260324b">
 </head>
 <body>
     <canvas id="particlesCanvas"></canvas>
@@ -173,20 +173,12 @@
     </div>
 
     <!-- Floating Admin Button -->
-    <button id="floatingAdminBtn" onclick="openAdmin()" title="Panel Admin" style="
-        position: fixed; bottom: 16px; right: 16px; z-index: 9999;
-        width: 44px; height: 44px; border-radius: 50%;
-        background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-        color: rgba(255,255,255,0.4); font-size: 20px; cursor: pointer;
-        backdrop-filter: blur(8px); transition: all 0.3s ease;
-        display: flex; align-items: center; justify-content: center;
-    " onmouseover="this.style.background='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.8)'"
-       onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.4)'">⚙️</button>
+    <button id="floatingAdminBtn" title="Panel Admin">⚙️</button>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-    <script src="/questions.js?v=20260324"></script>
-    <script src="/jeopardy/app.js?v=20260324"></script>
+    <script src="/questions.js?v=20260324b"></script>
+    <script src="/jeopardy/app.js?v=20260324b"></script>
 </body>
 </html>

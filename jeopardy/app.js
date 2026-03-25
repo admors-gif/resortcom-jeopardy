@@ -825,6 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('adminResetMesas').addEventListener('click', adminResetMesas);
     document.getElementById('adminResetAll').addEventListener('click', adminResetAll);
     document.getElementById('adminClose').addEventListener('click', closeAdmin);
+    document.getElementById('floatingAdminBtn').addEventListener('click', openAdmin);
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
