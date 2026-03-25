@@ -171,15 +171,15 @@
     <div id="buzzerScreen" class="screen">
         <div class="scoreboard" id="scoreboardBuzzer"></div>
         <div class="buzz-box">
-            <h2 class="buzz-title">¿QUIÉN PRESIONÓ PRIMERO?</h2>
-            <p class="buzz-hint" id="buzzHintText">¡El ganador elige la pregunta del tablero!</p>
+            <h2 class="buzz-title" style="animation: pulse-title 1.5s infinite alternate;">ESPERANDO A LOS JUGADORES...</h2>
+            <p class="buzz-hint" id="buzzHintText">Los jugadores deben presionar el buzzer en su celular. <br><span style="opacity:0.5; font-size: 0.8em">(Haz clic aquí como salvavidas en caso de falla técnica)</span></p>
             <div class="buzz-buttons">
-                <button class="buzz-btn buzz-b1" id="buzzTeam1">
+                <button class="buzz-btn buzz-b1" id="buzzTeam1" style="animation: pulse-border 1.5s infinite">
                     <img src="" alt="" class="buzz-team-flag" id="buzzFlag1">
                     <span class="buzz-team-name" id="buzzName1">PAÍS 1</span>
                 </button>
-                <div class="buzz-lightning">⚡</div>
-                <button class="buzz-btn buzz-b2" id="buzzTeam2">
+                <div class="buzz-lightning" style="animation: flash 1s infinite alternate">⚡</div>
+                <button class="buzz-btn buzz-b2" id="buzzTeam2" style="animation: pulse-border 1.5s infinite alternate-reverse">
                     <img src="" alt="" class="buzz-team-flag" id="buzzFlag2">
                     <span class="buzz-team-name" id="buzzName2">PAÍS 2</span>
                 </button>
@@ -259,7 +259,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-    <script src="/questions.js?v=20260324e"></script>
-    <script src="/jeopardy/app.js?v=20260324e"></script>
+    <script src="/questions.js?v=20260324f"></script>
+    <script src="/jeopardy/app.js?v=20260324f"></script>
 </body>
 </html>
