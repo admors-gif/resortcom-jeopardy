@@ -444,17 +444,49 @@ function updatePlayerScores() {
 }
 
 // ===== BUZZER SYNC =====
-function activateBuzzerForPlayers() {
+function startBuzzerCountdown() {
     if (state.role !== 'host' || !state.myMesa) return;
-    GAME_REF.child(`buzzer/mesa${state.myMesa}`).set({
-        active: true,
-        winner: null
-    });
+    playSound('select');
+    document.getElementById('startCountdownBtn').style.display = 'none';
+    document.getElementById('buzzTitleText').style.display = 'none';
+    document.getElementById('hostCountdownContainer').style.display = 'flex';
+    document.getElementById('hostBuzzButtons').style.display = 'none';
+    
+    let time = 5;
+    document.getElementById('hostCountdownContainer').textContent = time;
+    GAME_REF.child(`buzzer/mesa${state.myMesa}`).set({ active: false, winner: null, countdown: time });
+    playSound('tick');
+
+    clearInterval(state.countdownInterval);
+    state.countdownInterval = setInterval(() => {
+        time--;
+        if (time > 0) {
+            document.getElementById('hostCountdownContainer').textContent = time;
+            GAME_REF.child(`buzzer/mesa${state.myMesa}/countdown`).set(time);
+            playSound('tick');
+        } else {
+            clearInterval(state.countdownInterval);
+            document.getElementById('hostCountdownContainer').textContent = '¡GO!';
+            document.getElementById('hostCountdownContainer').style.color = 'var(--green)';
+            GAME_REF.child(`buzzer/mesa${state.myMesa}`).set({ active: true, winner: null, countdown: 0 });
+            playSound('buzzer');
+            setTimeout(() => {
+                document.getElementById('hostCountdownContainer').style.display = 'none';
+                document.getElementById('buzzTitleText').textContent = '¡CARRERA EN CURSO!';
+                document.getElementById('buzzTitleText').style.display = 'block';
+                document.getElementById('buzzTitleText').style.animation = 'none';
+                document.getElementById('buzzTitleText').style.color = 'var(--green)';
+                document.getElementById('hostCountdownContainer').style.color = 'var(--red)';
+                document.getElementById('hostBuzzButtons').style.display = 'flex';
+            }, 1500);
+        }
+    }, 1000);
 }
 
 function deactivateBuzzerForPlayers() {
     if (state.role !== 'host' || !state.myMesa) return;
-    GAME_REF.child(`buzzer/mesa${state.myMesa}`).set({ active: false, winner: null });
+    clearInterval(state.countdownInterval);
+    GAME_REF.child(`buzzer/mesa${state.myMesa}`).set({ active: false, winner: null, countdown: null });
 }
 
 function listenToBuzzerSync() {
@@ -478,15 +510,29 @@ function listenToBuzzerSync() {
         }
 
         // Player mode
-        if (!data.active) {
+        if (data.countdown && data.countdown > 0) {
             buzzBtn.disabled = true;
             buzzBtn.classList.remove('active-buzz', 'won', 'lost');
-            statusEl.textContent = '⏳ Esperando ronda...';
+            statusEl.textContent = data.countdown;
+            statusEl.style.fontSize = '4rem';
             statusEl.classList.remove('winner', 'loser');
-            hintEl.textContent = 'El host activará el buzzer';
+            hintEl.textContent = '¡PREPÁRATE!';
             state.buzzerPressed = false;
             return;
         }
+
+        if (!data.active) {
+            buzzBtn.disabled = true;
+            buzzBtn.classList.remove('active-buzz', 'won', 'lost');
+            statusEl.textContent = '⏳ Esperando...';
+            statusEl.style.fontSize = '';
+            statusEl.classList.remove('winner', 'loser');
+            hintEl.textContent = 'El host lanzará la carrera en breve';
+            state.buzzerPressed = false;
+            return;
+        }
+        
+        statusEl.style.fontSize = ''; // reset size
 
         if (data.winner) {
             const mySide = state.role === 'playerLeft' ? 'left' : 'right';
@@ -755,11 +801,22 @@ function goToBuzzer() {
     document.getElementById('buzzName1').textContent = leftC.name;
     document.getElementById('buzzFlag2').src = rightC.flagImg;
     document.getElementById('buzzName2').textContent = rightC.name;
-    renderAllScoreboards();
+    // Reset visual state for Host
+    document.getElementById('startCountdownBtn').style.display = 'block';
+    document.getElementById('buzzTitleText').textContent = 'ESPERANDO A LOS JUGADORES...';
+    document.getElementById('buzzTitleText').style.display = 'block';
+    document.getElementById('buzzTitleText').style.animation = 'pulse-title 1.5s infinite alternate';
+    document.getElementById('buzzTitleText').style.color = '';
+    document.getElementById('hostCountdownContainer').style.display = 'none';
+    document.getElementById('hostBuzzButtons').style.display = 'flex';
+
     showScreen('buzzer');
-    // Activate buzzer for phone players
-    activateBuzzerForPlayers();
-    listenToBuzzerSync();
+    
+    // Set locked state in Firebase
+    if (state.role === 'host') {
+        GAME_REF.child(`buzzer/mesa${state.myMesa}`).set({ active: false, winner: null, countdown: null });
+        listenToBuzzerSync();
+    }
 }
 
 function goToBoard() {
@@ -1110,6 +1167,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('adminResetMesas').addEventListener('click', adminResetMesas);
     document.getElementById('adminResetAll').addEventListener('click', adminResetAll);
     document.getElementById('adminClose').addEventListener('click', closeAdmin);
+
+    // BUZZER COUNTDOWN
+    const startCountdownBtn = document.getElementById('startCountdownBtn');
+    if (startCountdownBtn) startCountdownBtn.addEventListener('click', startBuzzerCountdown);
 
     // Floating admin button — created dynamically for reliability
     const fab = document.createElement('button');

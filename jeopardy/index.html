@@ -171,9 +171,18 @@
     <div id="buzzerScreen" class="screen">
         <div class="scoreboard" id="scoreboardBuzzer"></div>
         <div class="buzz-box">
-            <h2 class="buzz-title" style="animation: pulse-title 1.5s infinite alternate;">ESPERANDO A LOS JUGADORES...</h2>
-            <p class="buzz-hint" id="buzzHintText">Los jugadores deben presionar el buzzer en su celular. <br><span style="opacity:0.5; font-size: 0.8em">(Haz clic aquí como salvavidas en caso de falla técnica)</span></p>
-            <div class="buzz-buttons">
+            <h2 class="buzz-title" id="buzzTitleText" style="animation: pulse-title 1.5s infinite alternate;">ESPERANDO A LOS JUGADORES...</h2>
+            
+            <div id="hostCountdownContainer" style="font-size: 8rem; font-weight: 900; color: var(--red); text-shadow: 0 0 30px rgba(230,57,70,0.8); display: none; margin: 20px 0; font-family: 'Fredoka One', cursive;">
+                5
+            </div>
+
+            <button class="btn btn-primary" id="startCountdownBtn" style="margin-top:20px; font-size:1.5rem; padding: 15px 40px; box-shadow: 0 0 30px rgba(46, 204, 113, 0.4); background-color: var(--green);">
+                🏁 INICIAR CARRERA DE BUZZER (5s)
+            </button>
+
+            <p class="buzz-hint" id="buzzHintText" style="margin-top:20px;">Los jugadores deben presionar el buzzer en su celular. <br><span style="opacity:0.5; font-size: 0.8em">(Haz clic aquí como salvavidas en caso de falla técnica)</span></p>
+            <div class="buzz-buttons" id="hostBuzzButtons">
                 <button class="buzz-btn buzz-b1" id="buzzTeam1" style="animation: pulse-border 1.5s infinite">
                     <img src="" alt="" class="buzz-team-flag" id="buzzFlag1">
                     <span class="buzz-team-name" id="buzzName1">PAÍS 1</span>
@@ -259,7 +268,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-    <script src="/questions.js?v=20260324f"></script>
-    <script src="/jeopardy/app.js?v=20260324f"></script>
+    <script src="/questions.js?v=20260324g"></script>
+    <script src="/jeopardy/app.js?v=20260324g"></script>
 </body>
 </html>
