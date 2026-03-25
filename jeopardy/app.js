@@ -816,8 +816,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
-        // Admin shortcut: Ctrl+Shift+A from ANY screen
-        if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        // Admin shortcut: Ctrl+Alt+A from ANY screen
+        if (e.ctrlKey && e.altKey && (e.key === 'a' || e.key === 'A')) {
             e.preventDefault();
             openAdmin();
             return;
