@@ -816,6 +816,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
+        // Admin shortcut: Ctrl+Shift+A from ANY screen
+        if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+            e.preventDefault();
+            openAdmin();
+            return;
+        }
         if (screens.buzzer.classList.contains('active')) {
             if (e.key === '1' || e.key === 'ArrowLeft') onBuzz('left');
             else if (e.key === '2' || e.key === 'ArrowRight') onBuzz('right');
