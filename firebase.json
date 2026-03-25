@@ -27,12 +27,13 @@
       "ignore": [
         "firebase.json",
         ".firebaserc",
-        "**/node_modules/**"
+        "**/node_modules/**",
+        "jeopardy/**"
       ],
       "rewrites": [
         {
           "source": "**",
-          "destination": "/jeopardy/index.html"
+          "destination": "/index.html"
         }
       ],
       "headers": [
