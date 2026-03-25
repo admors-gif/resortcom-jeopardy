@@ -825,7 +825,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('adminResetMesas').addEventListener('click', adminResetMesas);
     document.getElementById('adminResetAll').addEventListener('click', adminResetAll);
     document.getElementById('adminClose').addEventListener('click', closeAdmin);
-    document.getElementById('floatingAdminBtn').addEventListener('click', openAdmin);
+
+    // Floating admin button — created dynamically for reliability
+    const fab = document.createElement('button');
+    fab.id = 'floatingAdminBtn';
+    fab.textContent = '⚙️';
+    fab.title = 'Panel Admin';
+    fab.addEventListener('click', openAdmin);
+    document.body.appendChild(fab);
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
