@@ -28,8 +28,8 @@
         "firebase.json",
         ".firebaserc",
         "**/node_modules/**",
-        "app.js",
-        "styles.css"
+        "./app.js",
+        "./styles.css"
       ],
       "rewrites": [
         {
@@ -43,7 +43,7 @@
           "headers": [
             {
               "key": "Cache-Control",
-              "value": "no-cache"
+              "value": "no-store, no-cache, must-revalidate"
             }
           ]
         }
