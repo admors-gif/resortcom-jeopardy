@@ -28,7 +28,6 @@
         "firebase.json",
         ".firebaserc",
         "**/node_modules/**",
-        "index.html",
         "app.js",
         "styles.css"
       ],
